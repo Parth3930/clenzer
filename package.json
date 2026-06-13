@@ -1,0 +1,66 @@
+{
+  "name": "clenzer",
+  "version": "1.0.0",
+  "description": "MCP server that scans for dead code and unnecessary complexity in TypeScript/JavaScript projects, then safely cleanses it. Works with Claude Code, Cursor, Antigravity, and any MCP-compatible CLI agent.",
+  "main": "dist/index.js",
+  "bin": {
+    "clenzer": "./dist/index.js"
+  },
+  "type": "module",
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "dead-code",
+    "unused-imports",
+    "code-cleanup",
+    "refactor",
+    "typescript",
+    "javascript",
+    "code-quality",
+    "static-analysis",
+    "ast",
+    "ts-morph",
+    "claude-code",
+    "cursor",
+    "antigravity",
+    "model-context-protocol",
+    "linter",
+    "cleaner",
+    "unused-variables",
+    "complexity"
+  ],
+  "author": "Parth3930",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Parth3930/clenzer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Parth3930/clenzer/issues"
+  },
+  "homepage": "https://github.com/Parth3930/clenzer#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "ts-morph": "^28.0.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  }
+}
