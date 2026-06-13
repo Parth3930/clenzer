@@ -4,7 +4,7 @@
   "description": "MCP server that scans for dead code and unnecessary complexity in TypeScript/JavaScript projects, then safely cleanses it. Works with Claude Code, Cursor, Antigravity, and any MCP-compatible CLI agent.",
   "main": "dist/index.js",
   "bin": {
-    "clenzer": "./dist/index.js"
+    "clenzer": "dist/index.js"
   },
   "type": "module",
   "files": [
