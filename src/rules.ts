@@ -8,18 +8,23 @@ const CLENZER_RULES = `
 
 These rules are enforced by the **clenzer** MCP on every session.
 
-> Run \`scan_dead_code\` and \`scan_complexity\` at the start of any significant
-> editing session, then \`cleanse\` to auto-remove safe dead code before generating
-> new code. This keeps the codebase lean and prevents token bloat.
+> **IMPORTANT**: Run \`scan_dead_code\` and \`scan_complexity\` at the start of any significant editing session and BEFORE completing your task, then run \`cleanse\` to auto-remove safe dead code. This keeps the codebase lean and prevents token bloat.
 
-### Rules
-1. **No unused imports** — every import must be referenced in the file body.
-2. **No unused variables** — variables must be read, not just declared.
-3. **Max function length: 60 lines** — extract helpers if exceeded.
-4. **Max nesting depth: 4** — flatten with early returns or helpers.
-5. **Max file size: 400 lines** — split large files into modules.
-6. **No duplicate code blocks** — extract shared logic into utilities.
-7. **Prefix intentionally unused variables with \`_\`** — clenzer will skip them.
+### Mandatory Rules
+1. **No Unused Imports** — Every import must be referenced in the file body. Namespace, default, and named imports must be used.
+2. **No Unused Local Variables** — Variables must be read, not just declared. If a variable is intentionally unused, prefix its name with \`_\` (e.g. \`_temp\`) so Clenzer skips it.
+3. **No Unused Private Members** — Class private properties and methods must be referenced within the class.
+4. **No Unused Local Declarations** — Local (non-exported) functions, classes, interfaces, type aliases, and enums must be referenced.
+5. **Max Function Length: 60 lines** — Extract helper functions if a method or function exceeds this length.
+6. **Max Nesting Depth: 4** — Flatten nested logic with early returns, guard clauses, or helper methods.
+7. **Max File Size: 600 lines** — Split large files into smaller, focused modules.
+8. **No Duplicate Code Blocks** — Extract shared block patterns (6+ lines) into reusable utilities.
+
+### Action Plan for the AI
+1. **Onboarding**: Run \`register_rules\` once at project setup.
+2. **On Task Start**: Run \`scan_dead_code\` and \`cleanse\` to clear existing debt so you don't inherit it.
+3. **During Development**: Follow the code length and nesting constraints.
+4. **On Task Completion**: Run \`scan_dead_code\` followed by \`cleanse\` to auto-clean your workspace. For any skipped items (e.g. unused exported functions/classes or destructured variables), review them manually and delete them if they are truly unused.
 
 <!-- clenzer:end -->
 `;
@@ -45,6 +50,17 @@ export function registerRules(projectRoot: string): {
   if (fs.existsSync(targetFile)) {
     const existing = fs.readFileSync(targetFile, "utf-8");
     if (existing.includes("clenzer:end")) {
+      // Overwrite the existing clenzer rules section if present, or update them
+      // Let's replace the old clenzer rules section if it exists, to upgrade the rules
+      const startIdx = existing.indexOf("## 🧹 Clenzer — Code Hygiene Rules");
+      const endIdx = existing.indexOf("<!-- clenzer:end -->");
+      if (startIdx !== -1 && endIdx !== -1) {
+        const before = existing.substring(0, startIdx);
+        const after = existing.substring(endIdx + "<!-- clenzer:end -->".length);
+        const updated = before + CLENZER_RULES.trim() + after;
+        fs.writeFileSync(targetFile, updated, "utf-8");
+        return { file: relFile, action: "appended" };
+      }
       return { file: relFile, action: "already-present" };
     }
     // Append rules

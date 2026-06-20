@@ -22,13 +22,13 @@ let lastScanResult: {
 // ─── MCP Server ───────────────────────────────────────────────────────────────
 const server = new McpServer({
   name: "clenzer",
-  version: "1.0.0",
+  version: "1.1.0",
 });
 
 // ─── Tool: register_rules ─────────────────────────────────────────────────────
 server.tool(
   "register_rules",
-  "Appends clenzer hygiene rules to AGENTS.md (or CLAUDE.md) in the project root so the agent enforces them every session. Run this once when adding clenzer to a project.",
+  "Creates or updates AGENTS.md or CLAUDE.md in the project root with the hygiene ruleset so the AI agent enforces them in every session. Run this once on onboarding a project.",
   {
     project_root: z
       .string()
@@ -40,7 +40,7 @@ server.tool(
       result.action === "already-present"
         ? `✅ Rules already present in ${result.file} — no changes made.`
         : result.action === "appended"
-        ? `✅ Appended clenzer rules to ${result.file}.`
+        ? `✅ Appended/Updated clenzer rules in ${result.file}.`
         : `✅ Created ${result.file} with clenzer rules.`;
     return { content: [{ type: "text", text: msg }] };
   }
@@ -49,7 +49,7 @@ server.tool(
 // ─── Tool: scan_dead_code ─────────────────────────────────────────────────────
 server.tool(
   "scan_dead_code",
-  "Scans a TypeScript/JavaScript project for dead code: unused imports, unused variables, and exported functions with no cross-file references. Results are stored in session state for use by `cleanse`.",
+  "Scans for dead code: unused imports (named, default, namespace), unused local variables/constants (destructuring aware), unused local declarations (functions, classes, interfaces, type aliases, enums), and class private members, plus exported functions/classes with no cross-file references. Run this before editing/finishing tasks.",
   {
     project_root: z
       .string()
@@ -121,7 +121,7 @@ server.tool(
     }
 
     lines.push("");
-    lines.push(`Run \`cleanse\` to auto-remove safe items (imports & variables).`);
+    lines.push(`Run \`cleanse\` to auto-remove safe items (imports, local variables, class private members).`);
 
     return { content: [{ type: "text", text: lines.join("\n") }] };
   }
@@ -130,7 +130,7 @@ server.tool(
 // ─── Tool: scan_complexity ────────────────────────────────────────────────────
 server.tool(
   "scan_complexity",
-  "Scans for unnecessary complexity: overly long functions, deep nesting, large files, and duplicate code blocks.",
+  "Scans for complexity hot-spots: overly long functions (>60 lines), deep block nesting (>4), large files (>600 lines), and duplicate code blocks (>=6 lines). Run this to identify files that need refactoring.",
   {
     project_root: z
       .string()
@@ -205,7 +205,7 @@ server.tool(
 // ─── Tool: cleanse ────────────────────────────────────────────────────────────
 server.tool(
   "cleanse",
-  "Safely removes dead code found by `scan_dead_code`. Auto-removes unused imports and side-effect-free variables. Skips anything risky (functions, exports, initializers with side effects). Always run `scan_dead_code` first.",
+  "Safely auto-removes dead code found by the last `scan_dead_code`. Deletes unused default/named/namespace imports, unused variables/constants, and class private fields/methods. Risky items (functions, classes, variables with side effects, partial destructuring) are skipped for manual review.",
   {
     project_root: z
       .string()
